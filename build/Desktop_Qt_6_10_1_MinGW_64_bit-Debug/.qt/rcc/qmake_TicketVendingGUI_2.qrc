@@ -1,0 +1,6 @@
+<RCC>
+  <qresource prefix="/qt/qml/TicketVendingGUI_2">
+    <file alias="qmldir">C:/Users/Soumik/Documents/TicketVendingGUI_2/build/Desktop_Qt_6_10_1_MinGW_64_bit-Debug/TicketVendingGUI_2/qmldir</file>
+  </qresource>
+</RCC>
+

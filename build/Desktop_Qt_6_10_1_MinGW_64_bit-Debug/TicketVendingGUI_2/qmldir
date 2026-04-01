@@ -1,0 +1,8 @@
+module TicketVendingGUI_2
+typeinfo appTicketVendingGUI_2.qmltypes
+prefer :/qt/qml/TicketVendingGUI_2/
+Main 1.0 Main.qml
+UTSDisplay 1.0 UTSDisplay.qml
+PRSDisplay_responsive 1.0 PRSDisplay_responsive.qml
+depends QtQuick
+

@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="/qt/qml/TicketVendingGUI_2/">
+    <file alias="Main.qml">C:/Users/Soumik/Documents/TicketVendingGUI_2/Main.qml</file>
+    <file alias="UTSDisplay.qml">C:/Users/Soumik/Documents/TicketVendingGUI_2/UTSDisplay.qml</file>
+    <file alias="PRSDisplay_responsive.qml">C:/Users/Soumik/Documents/TicketVendingGUI_2/PRSDisplay_responsive.qml</file>
+  </qresource>
+</RCC>
+

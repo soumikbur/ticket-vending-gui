@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>Main.qml</file>
+        <file>PRSDisplay_responsive.qml</file>
+        <file>UTSDisplay.qml</file>
+        <file>qr_code.png</file>
+    </qresource>
+    <qresource prefix="/data">
+        <file>ticket_header.csv</file>
+        <file>passengers.csv</file>
+    </qresource>
+</RCC>

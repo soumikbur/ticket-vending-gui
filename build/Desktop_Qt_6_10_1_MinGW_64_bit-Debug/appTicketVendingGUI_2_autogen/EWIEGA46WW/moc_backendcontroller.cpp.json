@@ -1,0 +1,110 @@
+{
+    "classes": [
+        {
+            "className": "BackendController",
+            "lineNumber": 73,
+            "methods": [
+                {
+                    "access": "public",
+                    "index": 3,
+                    "lineNumber": 91,
+                    "name": "loadTickets",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "arguments": [
+                        {
+                            "name": "ticketId",
+                            "type": "int"
+                        }
+                    ],
+                    "index": 4,
+                    "lineNumber": 92,
+                    "name": "loadPassengers",
+                    "returnType": "void"
+                }
+            ],
+            "object": true,
+            "properties": [
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 0,
+                    "lineNumber": 78,
+                    "name": "currentMode",
+                    "notify": "currentModeChanged",
+                    "read": "currentMode",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QString",
+                    "user": false
+                },
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 1,
+                    "lineNumber": 81,
+                    "name": "tickets",
+                    "notify": "ticketsChanged",
+                    "read": "tickets",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QVariantList",
+                    "user": false
+                },
+                {
+                    "constant": false,
+                    "designable": true,
+                    "final": false,
+                    "index": 2,
+                    "lineNumber": 82,
+                    "name": "passengers",
+                    "notify": "passengersChanged",
+                    "read": "passengers",
+                    "required": false,
+                    "scriptable": true,
+                    "stored": true,
+                    "type": "QVariantList",
+                    "user": false
+                }
+            ],
+            "qualifiedClassName": "BackendController",
+            "signals": [
+                {
+                    "access": "public",
+                    "index": 0,
+                    "lineNumber": 99,
+                    "name": "currentModeChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 1,
+                    "lineNumber": 102,
+                    "name": "ticketsChanged",
+                    "returnType": "void"
+                },
+                {
+                    "access": "public",
+                    "index": 2,
+                    "lineNumber": 103,
+                    "name": "passengersChanged",
+                    "returnType": "void"
+                }
+            ],
+            "superClasses": [
+                {
+                    "access": "public",
+                    "name": "QObject"
+                }
+            ]
+        }
+    ],
+    "inputFile": "backendcontroller.h",
+    "outputRevision": 69
+}

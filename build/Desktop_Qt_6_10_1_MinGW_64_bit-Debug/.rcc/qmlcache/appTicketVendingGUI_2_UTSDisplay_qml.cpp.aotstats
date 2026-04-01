@@ -1,0 +1,39 @@
+{
+    "formatRevision": 1,
+    "modules": [
+        {
+            "moduleFiles": [
+                {
+                    "entries": [
+                        {
+                            "codegenResult": 0,
+                            "column": 19,
+                            "durationMicroseconds": 139,
+                            "functionName": "fill",
+                            "line": 5,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 22,
+                            "durationMicroseconds": 76,
+                            "functionName": "top",
+                            "line": 10,
+                            "message": ""
+                        },
+                        {
+                            "codegenResult": 0,
+                            "column": 35,
+                            "durationMicroseconds": 47,
+                            "functionName": "horizontalCenter",
+                            "line": 11,
+                            "message": ""
+                        }
+                    ],
+                    "filePath": "C:/Users/Soumik/Documents/TicketVendingGUI_2/UTSDisplay.qml"
+                }
+            ],
+            "moduleId": "TicketVendingGUI_2(appTicketVendingGUI_2)"
+        }
+    ]
+}
