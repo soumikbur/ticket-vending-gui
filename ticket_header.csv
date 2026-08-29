@@ -1,5 +1,5 @@
 Ticket_ID,From,To,Train_No,Date,Quota,Class,Total_Passengers,Fare,Boarding_Point,Reservation_Upto,Payment_Mode,Operator_Name
-1,SBC,MAS,12592,20-Feb,GN,3A,3,2886,SBC,MAS,UPI-QR,Ravi Sharma
+1,NDLS,MAS,12616,14 / 07,GN,SL,06,4680.00,NDLS,MAS,UPI-QR CODE,Amit Kumar
 2,NDLS,MAS,12717,15-Feb,TQ,3A,5,1244,NDLS,MAS,UPI-QR,Ravi Sharma
 3,BBS,PNBE,12191,27-Feb,TQ,3A,3,4435,BBS,PNBE,UPI-QR,Ravi Sharma
 4,BBS,CSMT,12724,08-Mar,LD,SL,5,4460,BBS,CSMT,UPI-QR,Amit Kumar

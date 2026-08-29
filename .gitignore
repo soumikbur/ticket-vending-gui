@@ -1,0 +1,7 @@
+.qtcreator/*.user
+.qtcreator/*.user.*
+build/
+debug/
+release/
+*.user
+*.user.*

@@ -1,896 +1,705 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
+import TicketVendingGUI_2 1.0
 
 Item {
     id: root
-    anchors.fill: parent
+    width: 439
+    height: 326
 
-    // ── SLOT 1 ──
-    readonly property var slot1: [
-        { pname: "Ravi",        sex: "M", age: "23", status: "S4 - 66" },
-        { pname: "AmitK",       sex: "F", age: "34", status: "S4 - 65" },
-        { pname: "TARAN",       sex: "M", age: "33", status: "S4 - 67" },
-        { pname: "Neeraj",      sex: "M", age: "22", status: "S4 - 68" },
-        { pname: "Sangeeta",    sex: "M", age: "34", status: "S4 - 69" },
-        { pname: "Kshitiz",     sex: "M", age: "23", status: "S4 - 70" }
+    // ── DATA SOURCES & FALLBACK SPECIMENS ──
+    property var activeTicket: (typeof Backend !== "undefined" && Backend && Backend.tickets && Backend.tickets.length > 0) ? Backend.tickets[0] : null
+
+    // Default specimen values matching the reference specification
+    readonly property string valFrom:       (activeTicket && activeTicket.From) ? activeTicket.From : "NDLS"
+    readonly property string valTo:         (activeTicket && activeTicket.To) ? activeTicket.To : "MAS"
+    readonly property string valTrainNo:    (activeTicket && activeTicket.Train_No) ? activeTicket.Train_No : "12616"
+    readonly property string valQuota:      (activeTicket && activeTicket.Quota) ? activeTicket.Quota : "GN"
+    readonly property string valDate:       (activeTicket && activeTicket.Date) ? activeTicket.Date : "14 / 07"
+    readonly property string valTotalPass:  (activeTicket && activeTicket.Total_Passengers) ? String(activeTicket.Total_Passengers).padStart(2, '0') : "06"
+    readonly property string valClass:      (activeTicket && activeTicket.Class) ? activeTicket.Class : "SL"
+    readonly property string valFare:       (activeTicket && activeTicket.Fare) ? (Number(activeTicket.Fare).toFixed(2)) : "4680.00"
+    readonly property string valBoarding:   (activeTicket && activeTicket.Boarding_Point) ? activeTicket.Boarding_Point : "NDLS"
+    readonly property string valResvUpto:   (activeTicket && activeTicket.Reservation_Upto) ? activeTicket.Reservation_Upto : "MAS"
+    readonly property string valPaymentMode:(activeTicket && activeTicket.Payment_Mode) ? activeTicket.Payment_Mode : "UPI-QR CODE"
+    readonly property string valOperator:   (activeTicket && activeTicket.Operator_Name) ? activeTicket.Operator_Name : "Amit Kumar"
+
+    readonly property string valQrString: (activeTicket && activeTicket.qrString)
+        ? activeTicket.qrString
+        : (typeof Backend !== "undefined" && Backend && Backend.currentQrString)
+            ? Backend.currentQrString
+            : "upi://pay?pa=railway@upi&pn=INDIAN%20RAILWAYS&am=4680.00&tr=TXN12616&cu=INR"
+
+    // Passenger Roster (Exact reference specimen)
+    readonly property var defaultPassengers: [
+        { name: "Ravi",     sex: "M", age: "23", status: "S4 - 66" },
+        { name: "AmitK",    sex: "F", age: "34", status: "S4 - 65" },
+        { name: "TARAN",    sex: "M", age: "33", status: "S4 - 67" },
+        { name: "Neeraj",   sex: "M", age: "22", status: "S4 - 68" },
+        { name: "Sangeeta", sex: "M", age: "34", status: "S4 - 69" },
+        { name: "Kshitiz",  sex: "M", age: "23", status: "S4 - 70" }
     ]
+    readonly property var passengerList: (typeof Backend !== "undefined" && Backend && Backend.passengers && Backend.passengers.length > 0) ? Backend.passengers : defaultPassengers
 
-    // ── SLOT 2 ──
-    readonly property var slot2: [
-        { pname: "Priya Sharma",  sex: "F", age: "28", status: "S4 - 71" },
-        { pname: "Rahul Gupta",   sex: "M", age: "45", status: "S4 - 72" },
-        { pname: "Anjali Singh",  sex: "F", age: "19", status: "S4 - 73" },
-        { pname: "Vikram Das",    sex: "M", age: "52", status: "S4 - 74" },
-        { pname: "Meena Patel",   sex: "F", age: "37", status: "S4 - 75" },
-        { pname: "Arjun Reddy",   sex: "M", age: "31", status: "S4 - 76" }
-    ]
-
-    // ── ACTIVE SLOT — change slot1 → slot2 here to switch ──
-    // property var activePassengers: slot1
-    property var activePassengers: slot2   // <-- uncomment this & comment above to see slot2
-
-    // ── Ticket data ──
-    readonly property var ticket: ({
-        from:       "NDLS",
-        to:         "MAS",
-        trainNo:    "12616",
-        quota:      "GN",
-        date:       "14/ 07",
-        totalPass:  "06",
-        cls:        "SL",
-        fare:       "4680.00",
-        boarding:   "NDLS",
-        resvUpto:   "MAS",
-        operator:   "Amit Kumar"
-    })
-
-    // ══════════════════════════════════════════════════════════════════
-    //  COLOURS
-    // ══════════════════════════════════════════════════════════════════
-    readonly property color cCream:  "#FFFFFF"
+    // ── COLOR SYSTEM ──
+    readonly property color cMaroon: "#400000"
+    readonly property color cFareBg: "#410000"
     readonly property color cBlack:  "#000000"
-    readonly property color cMaroon: "#3B0000"
-    readonly property color cDarkM:  "#5C0A0A"
-    readonly property color cGold:   "#C8A040"
-    readonly property color cGap:    "#FFFFFF"   // gap between cells = cream
+    readonly property color cWhite:  "#FFFFFF"
+    readonly property color cBorder: "#C0C0C0"
 
-    // ══════════════════════════════════════════════════════════════════
-    //  MAIN CANVAS
-    // ══════════════════════════════════════════════════════════════════
+    // ── FONT CONSTANTS ──
+    readonly property string fSerif: "Times New Roman"
+    readonly property string fCond:  "Arial"
+    readonly property string fHindi: "Nirmala UI"
+
+    // ── MASTER KIOSK CONTAINER ──
     Rectangle {
         id: canvas
         anchors.fill: parent
-        anchors.margins: 10
-        color: cCream
+        color: cWhite
+        border.color: cBorder
+        border.width: 3
 
-        // ── All proportional math ──
-        property real cw: width
-        property real ch: height
-        property real gap: cw * 0.004          // ~4px gap at 1000px width
+        // ══════════════════════════════════════════════════════
+        // 1. HEADER (y: 3 to 48, Height: 45px)
+        // ══════════════════════════════════════════════════════
+        Rectangle {
+            id: headerBox
+            x: 3
+            y: 3
+            width: 433
+            height: 45
+            color: cWhite
 
-        // ── Column fractions (rows 1-3: 4-column grid) ──
-        property real lbl1W: 0.086             // "From" / "Train No" / "Date" label
-        property real val1W: 0.370             // NDLS value / 12616 / 14-07
-        property real lbl2W: 0.068             // "To" / "Quota" / "Fare" label
-        // val2 fills rest
-
-        // ── Row-3 extra columns (Date row) ──
-        property real dateW:  0.100            // date value cell
-        property real totalW: 0.155            // Total Passangers cell
-        property real classW: 0.092            // Class cell
-        property real fareLW: 0.067            // Fare label
-
-        // ── Rows 4+5 column fractions ──
-        property real brdLW:  0.100            // "Boarding Point" label
-        property real brdVW:  0.100            // NDLS value
-        property real rsvLW:  0.130            // "Reservation Up To" label
-        property real qrPanW: 0.210            // QR panel (rightmost, spans rows 4+5)
-        // rsvVal fills middle
-
-        // ── Row height fractions ──
-        property real hHdr:  0.128
-        property real hR1:   0.090
-        property real hR2:   0.090
-        property real hR3:   0.092
-        property real hR4:   0.106
-        property real hFtr:  0.092
-        // hR5 (passenger table) = remaining between R4 and footer
-
-        // ── Computed Y positions ──
-        property real yHdr: 0
-        property real yR1:  hHdr + gap/ch
-        property real yR2:  yR1  + hR1 + gap/ch
-        property real yR3:  yR2  + hR2 + gap/ch
-        property real yR4:  yR3  + hR3 + gap/ch
-        property real yR5:  yR4  + hR4 + gap/ch
-        property real yFtr: 1.0  - hFtr
-        property real hR5:  yFtr - yR5 - gap/ch
-
-        // ── Computed X positions (rows 1-3) ──
-        property real xV1:  lbl1W + gap/cw
-        property real xL2:  xV1 + val1W + gap/cw
-        property real xV2:  xL2 + lbl2W + gap/cw
-
-        // ── Computed X positions (row 3 extras) ──
-        property real xDate:  lbl1W + gap/cw
-        property real xTotal: xDate  + dateW  + gap/cw
-        property real xClass: xTotal + totalW + gap/cw
-        property real xFareL: xClass + classW + gap/cw
-        property real xFareV: xFareL + fareLW + gap/cw
-
-        // ── Computed X positions (rows 4+5) ──
-        property real xBrdV:  brdLW + gap/cw
-        property real xRsvL:  xBrdV + brdVW + gap/cw
-        property real xRsvV:  xRsvL + rsvLW + gap/cw
-        property real xQrP:   1.0 - qrPanW
-
-        // ══════════════
-        //  HEADER
-        // ══════════════
-        Item {
-            x: 0
-            y: canvas.yHdr * canvas.ch
-            width:  canvas.cw
-            height: canvas.hHdr * canvas.ch
-
+            // "Ticket Information" Title
             Text {
+                id: headerTitle
                 anchors.left: parent.left
-                anchors.leftMargin: parent.width * 0.005
+                anchors.leftMargin: 6
                 anchors.verticalCenter: parent.verticalCenter
                 text: "Ticket Information"
-                color: root.cMaroon
                 font.family: "Georgia"
-                font.pixelSize: Math.min(parent.height * 0.68, parent.width * 0.068)
+                font.pixelSize: 28
                 font.bold: true
-                font.italic: true
+                color: root.cMaroon
             }
 
+            // Operator Code / CLIENT
             Column {
-                anchors.right: emblem.left
-                anchors.rightMargin: 6
-                anchors.top: parent.top
-                anchors.topMargin: 4
+                id: operatorCol
+                anchors.right: emblemImg.left
+                anchors.rightMargin: 8
+                anchors.verticalCenter: parent.verticalCenter
                 spacing: 1
+
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "Operator Code"
-                    font.pixelSize: 9
+                    font.family: "Arial"
+                    font.pixelSize: 8
+                    font.bold: true
                     color: root.cMaroon
                 }
-                Rectangle { width: 72; height: 1; color: root.cMaroon }
+                Rectangle {
+                    width: 52
+                    height: 1
+                    color: root.cMaroon
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: "CLIENT"
+                    font.family: root.fCond
                     font.pixelSize: 10
                     font.bold: true
-                    color: root.cMaroon
+                    color: root.cBlack
                 }
             }
 
-            Rectangle {
-                id: emblem
+            // Official Indian Railways Logo
+            Image {
+                id: emblemImg
                 anchors.right: parent.right
-                anchors.top: parent.top
-                anchors.topMargin: -2
-                width: Math.min(parent.height * 1.05, 72)
-                height: width
-                radius: width / 2
-                color: "#8B1010"
-                border.color: root.cGold
-                border.width: 3
+                anchors.rightMargin: 4
+                anchors.verticalCenter: parent.verticalCenter
+                width: 40
+                height: 40
+                source: "qrc:/railway_logo.png"
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+            }
 
+            // Bottom Divider
+            Rectangle {
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 3
+                color: root.cBorder
+            }
+        }
+
+        // ══════════════════════════════════════════════════════
+        // 2. ROW 1: FROM / TO (y: 51 to 89, Height: 38px)
+        // ══════════════════════════════════════════════════════
+        Rectangle {
+            id: row1
+            x: 3
+            y: 51
+            width: 433
+            height: 38
+            color: root.cBorder
+
+            // From Label (w: 48)
+            Rectangle {
+                x: 0; y: 0; width: 48; height: 38; color: root.cWhite
                 Column {
                     anchors.centerIn: parent
-                    anchors.verticalCenterOffset: 1
-                    spacing: 1
-                    Row {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 1
-                        Rectangle { width: 5; height: 7;  color: root.cGold; radius: 1 }
-                        Rectangle { width: 9; height: 9;  color: root.cGold; radius: 1 }
-                        Rectangle { width: 7; height: 7;  color: root.cGold; radius: 1 }
-                        Rectangle { width: 5; height: 7;  color: root.cGold; radius: 1 }
-                    }
-                    Rectangle {
-                        width: 31
-                        height: 2
-                        color: root.cGold
-                        anchors.horizontalCenter: parent.horizontalCenter
-                    }
-                    Row {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 5
-                        Rectangle { width: 7; height: 4; color: root.cGold; radius: 4 }
-                        Rectangle { width: 7; height: 4; color: root.cGold; radius: 4 }
-                        Rectangle { width: 7; height: 4; color: root.cGold; radius: 4 }
-                    }
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "From"; font.family: root.fSerif; font.pixelSize: 14; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "कहाँ से"; font.family: root.fHindi; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
                 }
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    anchors.bottomMargin: 3
-                    width: 42
-                    height: 15
-                    color: "#6B0000"
-                    radius: 2
-                    Text {
-                        anchors.centerIn: parent
-                        text: "भारतीय रेल"
-                        font.pixelSize: 7
-                        font.bold: true
-                        color: "#FFFFFF"
-                    }
+            }
+
+            // From Value (NDLS, w: 158)
+            Rectangle {
+                x: 51; y: 0; width: 158; height: 38; color: root.cBlack
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.valFrom
+                    font.family: root.fCond
+                    font.pixelSize: 26
+                    font.bold: true
+                    color: root.cWhite
+                }
+            }
+
+            // To Label (w: 55)
+            Rectangle {
+                x: 212; y: 0; width: 55; height: 38; color: root.cWhite
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "To"; font.family: root.fSerif; font.pixelSize: 14; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "कहाँ तक"; font.family: root.fHindi; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
+                }
+            }
+
+            // To Value (MAS, w: 163)
+            Rectangle {
+                x: 270; y: 0; width: 163; height: 38; color: root.cBlack
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.valTo
+                    font.family: root.fCond
+                    font.pixelSize: 26
+                    font.bold: true
+                    color: root.cWhite
                 }
             }
         }
 
-        // ══════════════
-        //  ROW 1 : FROM / TO
-        // ══════════════
-        Item {
-            x: 0
-            y: canvas.yR1 * canvas.ch
-            width:  canvas.cw
-            height: canvas.hR1 * canvas.ch
+        // Horizontal Divider 1
+        Rectangle { x: 3; y: 89; width: 433; height: 3; color: root.cBorder }
 
-            // "From" label
+        // ══════════════════════════════════════════════════════
+        // 3. ROW 2: TRAIN NO / QUOTA (y: 92 to 130, Height: 38px)
+        // ══════════════════════════════════════════════════════
+        Rectangle {
+            id: row2
+            x: 3
+            y: 92
+            width: 433
+            height: 38
+            color: root.cBorder
+
+            // Train No Label (w: 48)
             Rectangle {
-                x: 0
-                y: 0
-                width:  canvas.lbl1W * canvas.cw
-                height: parent.height
-                color: root.cCream
+                x: 0; y: 0; width: 48; height: 38; color: root.cWhite
                 Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "From";     color: root.cMaroon; font.pixelSize: Math.max(12, parent.parent.height*0.22); font.bold: true }
-                    Text { text: "कहाँ  से"; color: root.cMaroon; font.pixelSize: Math.max(8,  parent.parent.height*0.15) }
-                }
-            }
-            // FROM value
-            Rectangle {
-                x: canvas.xV1 * canvas.cw
-                y: 0
-                width:  canvas.val1W * canvas.cw
-                height: parent.height
-                color: root.cBlack
-                Text {
                     anchors.centerIn: parent
-                    text: root.ticket.from
-                    color: "#FFFFFF"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.55
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Train No."; font.family: root.fSerif; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "गाड़ी सं."; font.family: root.fHindi; font.pixelSize: 10; font.bold: true; color: root.cMaroon }
                 }
             }
-            // "To" label
+
+            // Train No Value (12616, w: 158)
             Rectangle {
-                x: canvas.xL2 * canvas.cw
-                y: 0
-                width:  canvas.lbl2W * canvas.cw
-                height: parent.height
-                color: root.cCream
+                x: 51; y: 0; width: 158; height: 38; color: root.cBlack
+                Text {
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.valTrainNo
+                    font.family: root.fCond
+                    font.pixelSize: 26
+                    font.bold: true
+                    color: root.cWhite
+                }
+            }
+
+            // Quota Label (w: 55)
+            Rectangle {
+                x: 212; y: 0; width: 55; height: 38; color: root.cWhite
                 Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "To";        color: root.cMaroon; font.pixelSize: Math.max(12, parent.parent.height*0.22); font.bold: true }
-                    Text { text: "कहाँ  तक"; color: root.cMaroon; font.pixelSize: Math.max(8,  parent.parent.height*0.15) }
+                    anchors.centerIn: parent
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Quota"; font.family: root.fSerif; font.pixelSize: 13; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "कोटा"; font.family: root.fHindi; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
                 }
             }
-            // TO value
+
+            // Quota Value (GN, w: 163)
             Rectangle {
-                x: canvas.xV2 * canvas.cw
-                y: 0
-                width:  canvas.cw - canvas.xV2 * canvas.cw
-                height: parent.height
-                color: root.cBlack
+                x: 270; y: 0; width: 163; height: 38; color: root.cBlack
                 Text {
-                    anchors.centerIn: parent
-                    text: root.ticket.to
-                    color: "#FFFFFF"
+                    anchors.left: parent.left
+                    anchors.leftMargin: 8
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: root.valQuota
+                    font.family: root.fCond
+                    font.pixelSize: 26
                     font.bold: true
-                    font.pixelSize: parent.height * 0.55
+                    color: root.cWhite
                 }
             }
         }
 
-        // ══════════════
-        //  ROW 2 : TRAIN NO / QUOTA
-        // ══════════════
-        Item {
-            x: 0
-            y: canvas.yR2 * canvas.ch
-            width:  canvas.cw
-            height: canvas.hR2 * canvas.ch
+        // Horizontal Divider 2
+        Rectangle { x: 3; y: 130; width: 433; height: 3; color: root.cBorder }
 
+        // ══════════════════════════════════════════════════════
+        // 4. ROW 3: DATE / TOTAL PASSENGERS / CLASS / FARE (y: 133 to 171, Height: 38px)
+        // ══════════════════════════════════════════════════════
+        Rectangle {
+            id: row3
+            x: 3
+            y: 133
+            width: 433
+            height: 38
+            color: root.cBorder
+
+            // Date Label (w: 48)
             Rectangle {
-                x: 0
-                y: 0
-                width:  canvas.lbl1W * canvas.cw
-                height: parent.height
-                color: root.cCream
+                x: 0; y: 0; width: 48; height: 38; color: root.cWhite
                 Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Train No."; color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.20); font.bold: true }
-                    Text { text: "गाड़ी  सं."; color: root.cMaroon; font.pixelSize: Math.max(8,  parent.parent.height*0.15) }
-                }
-            }
-            Rectangle {
-                x: canvas.xV1 * canvas.cw
-                y: 0
-                width:  canvas.val1W * canvas.cw
-                height: parent.height
-                color: root.cBlack
-                Text {
                     anchors.centerIn: parent
-                    text: root.ticket.trainNo
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.55
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Date"; font.family: root.fSerif; font.pixelSize: 13; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "दिनांक"; font.family: root.fHindi; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
                 }
             }
+
+            // Date Value (14 / 07, w: 78, Centered & Non-cramped)
             Rectangle {
-                x: canvas.xL2 * canvas.cw
-                y: 0
-                width:  canvas.lbl2W * canvas.cw
-                height: parent.height
-                color: root.cCream
-                Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Quota"; color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.20); font.bold: true }
-                    Text { text: "कोटा";  color: root.cMaroon; font.pixelSize: Math.max(8,  parent.parent.height*0.15) }
-                }
-            }
-            Rectangle {
-                x: canvas.xV2 * canvas.cw
-                y: 0
-                width:  canvas.cw - canvas.xV2 * canvas.cw
-                height: parent.height
-                color: root.cBlack
+                id: dateBox
+                x: 51; y: 0; width: 78; height: 38; color: root.cBlack
+                clip: true
+
                 Text {
-                    anchors.centerIn: parent
-                    text: root.ticket.quota
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.55
-                }
-            }
-        }
-
-        // ══════════════
-        //  ROW 3 : DATE / TOTAL PASS / CLASS / FARE
-        // ══════════════
-        Item {
-            x: 0
-            y: canvas.yR3 * canvas.ch
-            width:  canvas.cw
-            height: canvas.hR3 * canvas.ch
-
-            // Date label
-            Rectangle {
-                x: 0
-                y: 0
-                width:  canvas.lbl1W * canvas.cw
-                height: parent.height
-                color: root.cCream
-                Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Date";   color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.20); font.bold: true }
-                    Text { text: "दिनांक"; color: root.cMaroon; font.pixelSize: Math.max(8,  parent.parent.height*0.15) }
-                }
-            }
-            // Date value
-            Rectangle {
-                x: canvas.xDate * canvas.cw
-                y: 0
-                width:  canvas.dateW * canvas.cw
-                height: parent.height
-                color: root.cBlack
-                Text {
-                    anchors.centerIn: parent
-                    text: root.ticket.date
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.42
-                }
-            }
-            // Total Passangers — split label/value
-            Rectangle {
-                x: canvas.xTotal * canvas.cw
-                y: 0
-                width:  canvas.totalW * canvas.cw
-                height: parent.height
-                color: root.cBlack
-
-                Rectangle {
-                    id: tpTop
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: parent.height * 0.50
-                    color: root.cBlack
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Total Passangers"
-                        color: "#FFFFFF"
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.pixelSize: Math.max(9, parent.height * 0.34)
-                    }
-                }
-                Rectangle {
-                    anchors.top: tpTop.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 1
-                    color: "#FFFFFF"
-                }
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: parent.height * 0.50
-                    color: root.cBlack
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.ticket.totalPass
-                        color: "#FFFFFF"
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.pixelSize: Math.max(12, parent.height * 0.40)
-                    }
-                }
-            }
-            // Class — split label/value
-            Rectangle {
-                x: canvas.xClass * canvas.cw
-                y: 0
-                width:  canvas.classW * canvas.cw
-                height: parent.height
-                color: root.cBlack
-
-                Rectangle {
-                    id: clsTop
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: parent.height * 0.50
-                    color: root.cBlack
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Class"
-                        color: "#FFFFFF"
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.italic: true
-                        font.pixelSize: Math.max(9, parent.height * 0.34)
-                    }
-                }
-                Rectangle {
-                    anchors.top: clsTop.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 1
-                    color: "#FFFFFF"
-                }
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: parent.height * 0.50
-                    color: root.cBlack
-                    Text {
-                        anchors.centerIn: parent
-                        text: root.ticket.cls
-                        color: "#FFFFFF"
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.pixelSize: Math.max(12, parent.height * 0.40)
-                    }
-                }
-            }
-            // Fare label
-            Rectangle {
-                x: canvas.xFareL * canvas.cw
-                y: 0
-                width:  canvas.fareLW * canvas.cw
-                height: parent.height
-                color: root.cCream
-                Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Fare";    color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.20); font.bold: true }
-                    Text { text: "किराया"; color: root.cMaroon; font.pixelSize: Math.max(8,  parent.parent.height*0.15) }
-                }
-            }
-            // Fare value
-            Rectangle {
-                x: canvas.xFareV * canvas.cw
-                y: 0
-                width:  canvas.cw - canvas.xFareV * canvas.cw
-                height: parent.height
-                color: root.cDarkM
-                Text {
-                    anchors.centerIn: parent
-                    text: root.ticket.fare
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.55
-                }
-            }
-        }
-
-        // ══════════════════════════════════════════════════════════
-        //  ROW 4 : BOARDING / RESERVATION — left part
-        // ══════════════════════════════════════════════════════════
-        Item {
-            x: 0
-            y: canvas.yR4 * canvas.ch
-            width:  (canvas.xQrP - canvas.gap/canvas.cw) * canvas.cw
-            height: canvas.hR4 * canvas.ch
-
-            // "Boarding Point" label
-            Rectangle {
-                x: 0
-                y: 0
-                width:  canvas.brdLW * canvas.cw
-                height: parent.height
-                color: root.cCream
-                Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Boarding"; color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.20); font.bold: true }
-                    Text { text: "Point";   color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.20); font.bold: true }
-                }
-            }
-            // Boarding value
-            Rectangle {
-                x: canvas.xBrdV * canvas.cw
-                y: 0
-                width:  canvas.brdVW * canvas.cw
-                height: parent.height
-                color: root.cBlack
-                Text {
-                    anchors.centerIn: parent
-                    text: root.ticket.boarding
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.42
-                }
-            }
-            // "Reservation Up To" label
-            Rectangle {
-                x: canvas.xRsvL * canvas.cw
-                y: 0
-                width:  canvas.rsvLW * canvas.cw
-                height: parent.height
-                color: root.cCream
-                Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.06
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Reservation"; color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.19); font.bold: true }
-                    Text { text: "Up To";       color: root.cMaroon; font.pixelSize: Math.max(11, parent.parent.height*0.19); font.bold: true }
-                }
-            }
-            // Reservation value
-            Rectangle {
-                x: canvas.xRsvV * canvas.cw
-                y: 0
-                width:  parent.width - canvas.xRsvV * canvas.cw
-                height: parent.height
-                color: root.cBlack
-                Text {
-                    anchors.centerIn: parent
-                    text: root.ticket.resvUpto
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: parent.height * 0.42
-                }
-            }
-        }
-
-        // ══════════════════════════════════════════════════════════
-        //  ROW 5 : PASSENGER TABLE — left part
-        // ══════════════════════════════════════════════════════════
-        Item {
-            x: 0
-            y: canvas.yR5 * canvas.ch
-            width:  (canvas.xQrP - canvas.gap/canvas.cw) * canvas.cw
-            height: canvas.hR5 * canvas.ch
-
-            Rectangle {
-                anchors.fill: parent
-                color: root.cBlack
-                border.color: "#444444"
-                border.width: 1
-
-                Column {
                     anchors.fill: parent
+                    anchors.leftMargin: 2
+                    anchors.rightMargin: 2
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: root.valDate
+                    font.family: root.fCond
+                    font.pixelSize: 20
+                    font.bold: true
+                    fontSizeMode: Text.Fit
+                    minimumPixelSize: 14
+                    color: root.cWhite
+                }
+            }
 
-                    // Header row
-                    Row {
-                        id: tableHeader
-                        width: parent.width
-                        height: parent.height * 0.135
+            // Total Passangers (w: 77)
+            Rectangle {
+                x: 132; y: 0; width: 77; height: 38; color: root.cBlack
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Total Passangers"; font.family: root.fSerif; font.pixelSize: 8; font.bold: true; color: root.cWhite }
+                    Rectangle { width: 68; height: 1; color: root.cWhite; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.valTotalPass; font.family: root.fCond; font.pixelSize: 18; font.bold: true; color: root.cWhite }
+                }
+            }
 
-                        Rectangle {
-                            width: parent.width * 0.540
-                            height: parent.height
-                            color: "#FFFFFF"
-                            border.color: "#AAAAAA"
-                            border.width: 1
-                            Text { anchors.centerIn: parent; text: "Passanger Name"; font.pixelSize: Math.max(9, parent.height*0.40); font.bold: true; color: "#000000" }
-                        }
-                        Rectangle {
-                            width: parent.width * 0.130
-                            height: parent.height
-                            color: "#FFFFFF"
-                            border.color: "#AAAAAA"
-                            border.width: 1
-                            Text { anchors.centerIn: parent; text: "Sex"; font.pixelSize: Math.max(9, parent.height*0.40); font.bold: true; color: "#000000" }
-                        }
-                        Rectangle {
-                            width: parent.width * 0.130
-                            height: parent.height
-                            color: "#FFFFFF"
-                            border.color: "#AAAAAA"
-                            border.width: 1
-                            Text { anchors.centerIn: parent; text: "Age"; font.pixelSize: Math.max(9, parent.height*0.40); font.bold: true; color: "#000000" }
-                        }
-                        Rectangle {
-                            width: parent.width * 0.200
-                            height: parent.height
-                            color: "#FFFFFF"
-                            border.color: "#AAAAAA"
-                            border.width: 1
-                            Text { anchors.centerIn: parent; text: "Status"; font.pixelSize: Math.max(9, parent.height*0.40); font.bold: true; color: "#000000" }
+            // Class (w: 55)
+            Rectangle {
+                x: 212; y: 0; width: 55; height: 38; color: root.cBlack
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 1
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Class"; font.family: root.fSerif; font.pixelSize: 10; font.bold: true; color: root.cWhite }
+                    Rectangle { width: 44; height: 1; color: root.cWhite; anchors.horizontalCenter: parent.horizontalCenter }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: root.valClass; font.family: root.fCond; font.pixelSize: 18; font.bold: true; color: root.cWhite }
+                }
+            }
+
+            // Fare Label (w: 58)
+            Rectangle {
+                x: 270; y: 0; width: 58; height: 38; color: root.cWhite
+                Column {
+                    anchors.centerIn: parent
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Fare"; font.family: root.fSerif; font.pixelSize: 13; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "किराया"; font.family: root.fHindi; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
+                }
+            }
+
+            // Fare Value (4680.00, w: 102, Dark Maroon, Perfectly centered & dynamically scaled)
+            Rectangle {
+                id: fareBox
+                x: 331; y: 0; width: 102; height: 38; color: root.cFareBg
+                clip: true
+
+                Text {
+                    id: fareText
+                    anchors.fill: parent
+                    anchors.leftMargin: 4
+                    anchors.rightMargin: 4
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                    text: root.valFare
+                    font.family: root.fCond
+                    font.pixelSize: 24
+                    font.bold: true
+                    fontSizeMode: Text.Fit
+                    minimumPixelSize: 12
+                    color: root.cWhite
+                }
+            }
+        }
+
+        // Horizontal Divider 3
+        Rectangle { x: 3; y: 171; width: 433; height: 3; color: root.cBorder }
+
+        // ══════════════════════════════════════════════════════
+        // 5. MID-SECTION: ROWS 4 & 5 + SPANNING QR PANEL (y: 174 to 286, Height: 112px)
+        // ══════════════════════════════════════════════════════
+        Item {
+            id: midSection
+            x: 3
+            y: 174
+            width: 433
+            height: 112
+
+            // ── LEFT COLUMN (w: 328) ──
+            Item {
+                x: 0; y: 0; width: 328; height: 112
+
+                // Row 4: Boarding Point & Reservation Up To (h: 38px)
+                Rectangle {
+                    x: 0; y: 0; width: 328; height: 38; color: root.cBorder
+
+                    // Boarding Point Label (w: 76)
+                    Rectangle {
+                        x: 0; y: 0; width: 76; height: 38; color: root.cWhite
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 0
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Boarding"; font.family: root.fSerif; font.pixelSize: 12; font.bold: true; color: root.cMaroon }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Point"; font.family: root.fSerif; font.pixelSize: 12; font.bold: true; color: root.cMaroon }
                         }
                     }
 
-                    // Data rows
-                    Repeater {
-                        model: root.activePassengers
-                        delegate: Row {
-                            property real rowH: (parent.height - tableHeader.height) / root.activePassengers.length
-                            width: parent.width
-                            height: rowH
+                    // Boarding Point Value (NDLS, w: 86)
+                    Rectangle {
+                        x: 79; y: 0; width: 86; height: 38; color: root.cBlack
+                        Text {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.valBoarding
+                            font.family: root.fCond
+                            font.pixelSize: 26
+                            font.bold: true
+                            color: root.cWhite
+                        }
+                    }
 
-                            Rectangle {
-                                width: parent.width * 0.540
-                                height: parent.height
-                                color: root.cBlack
-                                border.color: "#333333"
-                                border.width: 1
-                                Text {
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 6
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: modelData.pname
-                                    color: "#FFFFFF"
-                                    font.pixelSize: Math.max(9, parent.height * 0.42)
+                    // Reservation Up To Label (w: 69)
+                    Rectangle {
+                        x: 168; y: 0; width: 69; height: 38; color: root.cWhite
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 0
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Reservation"; font.family: root.fSerif; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Up To"; font.family: root.fSerif; font.pixelSize: 11; font.bold: true; color: root.cMaroon }
+                        }
+                    }
+
+                    // Reservation Up To Value (MAS, w: 88)
+                    Rectangle {
+                        x: 240; y: 0; width: 88; height: 38; color: root.cBlack
+                        Text {
+                            anchors.left: parent.left
+                            anchors.leftMargin: 8
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: root.valResvUpto
+                            font.family: root.fCond
+                            font.pixelSize: 26
+                            font.bold: true
+                            color: root.cWhite
+                        }
+                    }
+                }
+
+                // Horizontal Divider between Row 4 and Row 5
+                Rectangle { x: 0; y: 38; width: 328; height: 3; color: root.cBorder }
+
+                // Row 5: Passenger Table & Payment Mode Panel (y: 41 to 112, Height: 71px)
+                Item {
+                    x: 0; y: 41; width: 328; height: 71
+
+                    // Passenger Roster Table (w: 237, h: 71)
+                    Rectangle {
+                        id: tableBox
+                        x: 0; y: 0; width: 237; height: 71
+                        color: root.cBlack
+                        clip: true
+
+                        // Table Header (h: 11px)
+                        Rectangle {
+                            id: tableHdr
+                            x: 0; y: 0; width: 237; height: 11
+                            color: root.cWhite
+
+                            Text {
+                                x: 4
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Passenger Name"
+                                font.family: "Arial"
+                                font.pixelSize: 8
+                                font.bold: true
+                                color: root.cMaroon
+                            }
+                            Rectangle { x: 144; y: 0; width: 1; height: 11; color: root.cBorder }
+                            Text {
+                                x: 145; width: 28
+                                horizontalAlignment: Text.AlignHCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Sex"
+                                font.family: "Arial"
+                                font.pixelSize: 8
+                                font.bold: true
+                                color: root.cMaroon
+                            }
+                            Rectangle { x: 173; y: 0; width: 1; height: 11; color: root.cBorder }
+                            Text {
+                                x: 174; width: 28
+                                horizontalAlignment: Text.AlignHCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Age"
+                                font.family: "Arial"
+                                font.pixelSize: 8
+                                font.bold: true
+                                color: root.cMaroon
+                            }
+                            Rectangle { x: 202; y: 0; width: 1; height: 11; color: root.cBorder }
+                            Text {
+                                x: 203; width: 34
+                                horizontalAlignment: Text.AlignHCenter
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Status"
+                                font.family: "Arial"
+                                font.pixelSize: 8
+                                font.bold: true
+                                color: root.cMaroon
+                            }
+                        }
+
+                        // 6 Passenger Rows (each 10px tall, total 60px)
+                        Column {
+                            x: 0; y: 11; width: 237; height: 60
+                            spacing: 0
+
+                            Repeater {
+                                model: root.passengerList.slice(0, 6)
+                                delegate: Rectangle {
+                                    width: 237
+                                    height: 10
+                                    color: root.cBlack
+                                    border.color: "#333333"
+                                    border.width: 0.5
+
+                                    Text {
+                                        x: 4
+                                        width: 138
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.name || modelData.Passenger_Name || ""
+                                        font.family: root.fCond
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        color: root.cWhite
+                                        elide: Text.ElideRight
+                                    }
+                                    Rectangle { x: 144; y: 0; width: 1; height: 10; color: "#444444" }
+                                    Text {
+                                        x: 145; width: 28
+                                        horizontalAlignment: Text.AlignHCenter
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.sex || modelData.Sex || ""
+                                        font.family: root.fCond
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        color: root.cWhite
+                                    }
+                                    Rectangle { x: 173; y: 0; width: 1; height: 10; color: "#444444" }
+                                    Text {
+                                        x: 174; width: 28
+                                        horizontalAlignment: Text.AlignHCenter
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: String(modelData.age || modelData.Age || "")
+                                        font.family: root.fCond
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        color: root.cWhite
+                                    }
+                                    Rectangle { x: 202; y: 0; width: 1; height: 10; color: "#444444" }
+                                    Text {
+                                        x: 203; width: 34
+                                        horizontalAlignment: Text.AlignHCenter
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: modelData.status || modelData.Status || ""
+                                        font.family: root.fCond
+                                        font.pixelSize: 8
+                                        font.bold: true
+                                        color: root.cWhite
+                                    }
                                 }
                             }
-                            Rectangle {
-                                width: parent.width * 0.130
-                                height: parent.height
-                                color: root.cBlack
-                                border.color: "#333333"
-                                border.width: 1
-                                Text { anchors.centerIn: parent; text: modelData.sex; color: "#FFFFFF"; font.pixelSize: Math.max(9, parent.height*0.42) }
+                        }
+                    }
+
+                    // Vertical Divider between Passenger Table and Payment Mode
+                    Rectangle { x: 237; y: 0; width: 3; height: 71; color: root.cBorder }
+
+                    // Payment Mode Panel (w: 88, Height: 71)
+                    Rectangle {
+                        x: 240; y: 0; width: 88; height: 71
+                        color: root.cBlack
+                        clip: true
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 1
+                            width: parent.width - 6
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Payment"
+                                font.family: root.fSerif
+                                font.pixelSize: 14
+                                font.bold: true
+                                color: root.cWhite
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "Mode"
+                                font.family: root.fSerif
+                                font.pixelSize: 14
+                                font.bold: true
+                                color: root.cWhite
                             }
                             Rectangle {
-                                width: parent.width * 0.130
-                                height: parent.height
-                                color: root.cBlack
-                                border.color: "#333333"
-                                border.width: 1
-                                Text { anchors.centerIn: parent; text: modelData.age; color: "#FFFFFF"; font.pixelSize: Math.max(9, parent.height*0.42) }
+                                width: 72
+                                height: 1
+                                color: root.cWhite
+                                anchors.horizontalCenter: parent.horizontalCenter
                             }
-                            Rectangle {
-                                width: parent.width * 0.200
-                                height: parent.height
-                                color: root.cBlack
-                                border.color: "#333333"
-                                border.width: 1
-                                Text { anchors.centerIn: parent; text: modelData.status; color: "#FFFFFF"; font.pixelSize: Math.max(8, parent.height*0.38) }
+                            Item { width: 1; height: 2 }
+                            Text {
+                                width: parent.width
+                                horizontalAlignment: Text.AlignHCenter
+                                text: root.valPaymentMode
+                                font.family: root.fCond
+                                font.pixelSize: 11
+                                font.bold: true
+                                fontSizeMode: Text.Fit
+                                minimumPixelSize: 8
+                                color: root.cWhite
                             }
                         }
                     }
                 }
             }
-        }
 
-        // ══════════════════════════════════════════════════════════
-        //  QR PANEL — spans rows 4+5 on the right
-        // ══════════════════════════════════════════════════════════
-        Rectangle {
-            x: canvas.xQrP * canvas.cw
-            y: canvas.yR4  * canvas.ch
-            width:  canvas.qrPanW * canvas.cw
-            height: (canvas.hR4 + canvas.gap/canvas.ch + canvas.hR5) * canvas.ch
-            color: root.cBlack
+            // Vertical Divider separating Mid-Left Column from QR Panel
+            Rectangle { x: 328; y: 0; width: 3; height: 112; color: root.cBorder }
 
-            // QR Code image — top portion
+            // ── RIGHT COLUMN: SPANNING DYNAMIC 2D QR BARCODE PANEL (w: 102, h: 112) ──
             Rectangle {
-                id: qrImageBox
-                anchors.top: parent.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                anchors.margins: 4
-                height: parent.height * 0.52
-                color: root.cBlack
+                id: qrContainer
+                x: 331; y: 0; width: 102; height: 112
+                color: root.cWhite
+                clip: true
 
-                Image {
+                QRCodeItem {
+                    id: qrCodeDisplay
                     anchors.fill: parent
-                    anchors.margins: 2
-                    source: "qr_code.png"
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                }
-            }
-
-            // Divider
-            Rectangle {
-                anchors.top: qrImageBox.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 1
-                color: "#555555"
-            }
-
-            // "Payment Mode" label — middle
-            Rectangle {
-                anchors.top: qrImageBox.bottom
-                anchors.bottom: upiStrip.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                color: root.cBlack
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 3
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Payment"
-                        color: "#FFFFFF"
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.pixelSize: Math.max(14, parent.parent.height * 0.12)
-                    }
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "Mode"
-                        color: "#FFFFFF"
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.pixelSize: Math.max(14, parent.parent.height * 0.12)
-                    }
-                }
-            }
-
-            // Divider above UPI strip
-            Rectangle {
-                anchors.bottom: upiStrip.top
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: 2
-                color: root.cMaroon
-            }
-
-            // "UPI-QR CODE" bottom strip
-            Rectangle {
-                id: upiStrip
-                anchors.bottom: parent.bottom
-                anchors.left: parent.left
-                anchors.right: parent.right
-                height: parent.height * 0.088
-                color: root.cCream
-                Text {
-                    anchors.centerIn: parent
-                    text: "UPI-QR CODE"
-                    color: root.cMaroon
-                    font.family: "Georgia"
-                    font.bold: true
-                    font.pixelSize: Math.max(10, parent.height * 0.52)
+                    anchors.margins: 4
+                    qrText: root.valQrString
+                    quietZone: 2
                 }
             }
         }
 
-        // ══════════════
-        //  FOOTER
-        // ══════════════
-        Item {
-            x: 0
-            y: canvas.yFtr * canvas.ch
-            width:  canvas.cw
-            height: canvas.hFtr * canvas.ch
+        // Horizontal Divider 4
+        Rectangle { x: 3; y: 286; width: 433; height: 3; color: root.cBorder }
 
-            // "Operator Name" label
+        // ══════════════════════════════════════════════════════
+        // 6. ROW 6: FOOTER (y: 289 to 323, Height: 34px)
+        // ══════════════════════════════════════════════════════
+        Rectangle {
+            id: footerRow
+            x: 3
+            y: 289
+            width: 433
+            height: 34
+            color: root.cBorder
+
+            // Operator Name Label (w: 76)
             Rectangle {
-                x: 0
-                y: 0
-                width:  canvas.lbl1W * canvas.cw
-                height: parent.height
-                color: root.cCream
+                x: 0; y: 0; width: 76; height: 34; color: root.cWhite
                 Column {
-                    anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.08
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 1
-                    Text { text: "Operator"; color: root.cMaroon; font.pixelSize: Math.max(12, parent.parent.height*0.20); font.bold: true }
-                    Text { text: "Name";     color: root.cMaroon; font.pixelSize: Math.max(12, parent.parent.height*0.20); font.bold: true }
+                    anchors.centerIn: parent
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Operator"; font.family: root.fSerif; font.pixelSize: 12; font.bold: true; color: root.cMaroon }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "Name"; font.family: root.fSerif; font.pixelSize: 12; font.bold: true; color: root.cMaroon }
                 }
             }
-            // Operator value
+
+            // Operator Name Value (Amit Kumar, w: 249)
             Rectangle {
-                x: canvas.xV1 * canvas.cw
-                y: 0
-                width:  canvas.cw - canvas.xV1 * canvas.cw - canvas.qrPanW * canvas.cw - canvas.gap
-                height: parent.height
-                color: root.cBlack
+                x: 79; y: 0; width: 249; height: 34; color: root.cBlack
                 Text {
                     anchors.left: parent.left
-                    anchors.leftMargin: parent.width * 0.015
+                    anchors.leftMargin: 8
                     anchors.verticalCenter: parent.verticalCenter
-                    text: root.ticket.operator
-                    color: "#FFFFFF"
-                    font.family: "Georgia"
+                    text: root.valOperator
+                    font.family: root.fSerif
+                    font.pixelSize: 18
                     font.bold: true
-                    font.pixelSize: parent.height * 0.50
+                    color: root.cWhite
                 }
             }
-            // North Eastern Railway
+
+            // Zonal Railway & Division Info (w: 102, y: 0)
             Rectangle {
-                x: canvas.xQrP * canvas.cw
-                y: 0
-                width:  canvas.qrPanW * canvas.cw
-                height: parent.height
-                color: root.cCream
+                x: 331; y: 0; width: 102; height: 34; color: root.cWhite
                 Column {
-                    anchors.right: parent.right
-                    anchors.rightMargin: parent.width * 0.06
-                    anchors.verticalCenter: parent.verticalCenter
-                    spacing: 2
-                    Text {
-                        anchors.right: parent.right
-                        text: "North Eastern Railway"
-                        color: root.cMaroon
-                        font.family: "Georgia"
-                        font.bold: true
-                        font.pixelSize: Math.max(10, parent.parent.height * 0.18)
-                    }
-                    Text {
-                        anchors.right: parent.right
-                        text: "वाराणसी   मंडल"
-                        color: root.cMaroon
-                        font.pixelSize: Math.max(9, parent.parent.height * 0.16)
-                    }
+                    anchors.centerIn: parent
+                    spacing: 0
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "North Eastern Railway"; font.family: "Arial"; font.pixelSize: 9; font.bold: true; color: root.cBlack }
+                    Text { anchors.horizontalCenter: parent.horizontalCenter; text: "वाराणसी मंडल"; font.family: root.fHindi; font.pixelSize: 11; font.bold: true; color: root.cBlack }
                 }
             }
         }
-
-    } // canvas
+    }
 }

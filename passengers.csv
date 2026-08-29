@@ -1,8 +1,11 @@
 Passenger_ID,Ticket_ID,Passenger_Name,Sex,Age,Status
-1,1,Priya,F,21,S6-26
-2,1,Suman,F,57,S1-43
-3,1,Ravi,M,55,S2-18
-4,2,Ankit,F,44,S5-71
+1,1,Ravi,M,23,S4 - 66
+2,1,AmitK,F,34,S4 - 65
+3,1,TARAN,M,33,S4 - 67
+4,1,Neeraj,M,22,S4 - 68
+5,1,Sangeeta,M,34,S4 - 69
+6,1,Kshitiz,M,23,S4 - 70
+7,2,Ankit,F,44,S5-71
 5,2,Neeraj,F,44,S3-49
 6,2,Kunal,F,52,S5-60
 7,2,Ravi,F,48,S2-35

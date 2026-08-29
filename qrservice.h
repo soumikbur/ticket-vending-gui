@@ -2,6 +2,7 @@
 #define QRSERVICE_H
 
 #include <QString>
+#include <QImage>
 
 class QrService
 {
@@ -10,6 +11,13 @@ public:
     static QString generateUpiQr(
         const QString &amount,
         const QString &transactionId
+        );
+
+    // Generates rendered QImage for a given QR string
+    static QImage generateQrImage(
+        const QString &qrString,
+        int targetSize = 256,
+        int quietZone = 2
         );
 };
 
